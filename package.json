@@ -13,9 +13,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/songoao25/dsh-chatgpt-sub.git"
+    "url": "https://github.com/trillonariamente90-droid/dsh-chatgpt-sub.git"
   },
-  "homepage": "https://github.com/songoao25/dsh-chatgpt-sub",
+  "homepage": "https://github.com/trillonariamente90-droid/dsh-chatgpt-sub",
   "author": "SONGOAO25",
   "license": "MIT",
   "type": "module",
@@ -52,5 +52,6 @@
   },
   "peerDependencies": {
     "react": "^18.0.0"
-  }
+  },
+  "private": true
 }

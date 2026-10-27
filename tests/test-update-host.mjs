@@ -25,11 +25,9 @@ try {
   process.env.DSH_CHATGPT_AUTH = join(temporary, 'synthetic-auth.json');
   writeFileSync(process.env.DSH_CHATGPT_AUTH, '{"fixture":"preserve"}');
   delete process.env.DSH_CHATGPT_SELF_UPDATE;
-  globalThis.fetch = async url => {
-    assert.equal(new URL(url).origin, 'https://registry.npmjs.org');
-    if (new URL(url).pathname === '/dsh-chatgpt-sub/latest') return new Response(JSON.stringify({ version: remoteVersion, name: 'dsh-chatgpt-sub', dist: { integrity: 'sha512-' + 'A' * 88, tarball: 'https://registry.npmjs.org/dsh-chatgpt-sub/-/dsh-chatgpt-sub-' + remoteVersion + '.tgz' } }));
+  globalThis.fetch = async () => {
     downloadCount++;
-    throw new Error('unexpected download in read-only test');
+    throw new Error('personal fork must not contact npm');
   };
   const effect = fn => { const dispose = fn(); if (typeof dispose === 'function') disposers.push(dispose); };
   const plugin = (await import(pathToFileURL(join(packageDir, 'lib/index.js')))).default;
@@ -46,9 +44,9 @@ try {
     return { status: response.status, data: await response.json() };
   };
   const initial = await request('getUpdateState');
-  assert.equal(initial.data.disabled, undefined, 'real installed fixture enables updates');
+  assert.equal(initial.data.disabled, true, 'personal fork disables updates even when installed in a profile');
   assert.equal(initial.data.runningVersion, '0.4.0');
-  assert.equal(initial.data.autoUpdate, true);
+  assert.equal(initial.data.autoUpdate, false);
   assert.equal(initial.data.restartKind, null, 'disk equals running at boot: nothing to restart');
   assert.ok('restartDirection' in initial.data, 'compat field for pages built before the three-way kind');
   for (const method of ['checkUpdate', 'enterUpdatePage', 'installUpdate', 'setUpdateAuto', 'rollbackUpdate', 'runUpdateCheck']) assert.equal((await request(method)).status, 405, method + ' requires POST');
@@ -58,8 +56,8 @@ try {
   assert.equal((await request('enterUpdatePage', {})).data.deferredUntilRestart, true);
   remoteVersion = '0.5.0';
   const checked = await request('checkUpdate', {});
-  assert.equal(checked.data.latest, '0.5.0');
-  assert.equal(checked.data.available, true);
+  assert.equal(checked.data.latest, null);
+  assert.equal(checked.data.available, false);
   assert.equal(downloadCount, 0, 'checking cannot download or install');
   assert.equal(JSON.parse(readFileSync(join(packageDir, 'package.json'))).version, '0.4.0');
   // 磁盘被插件之外的东西换成旧版（这里直接改 package.json 模拟 DSH 的插件安装）：没有回滚记录，
@@ -67,13 +65,16 @@ try {
   writeFileSync(join(packageDir, 'package.json'), JSON.stringify({ name: 'dsh-chatgpt-sub', type: 'module', version: '0.3.0' }));
   const downgraded = await request('getUpdateState');
   assert.equal(downgraded.data.diskVersion, '0.3.0');
-  assert.equal(downgraded.data.runningVersion, '0.4.0');
-  assert.equal(downgraded.data.restartKind, 'downgrade');
-  assert.equal(downgraded.data.restartDirection, 'rollback', 'compat field keeps its old shape for old pages');
+  assert.equal(downgraded.data.runningVersion, '0.3.0');
+  assert.equal(downgraded.data.restartKind, null);
+  assert.equal(downgraded.data.restartDirection, null);
   writeFileSync(join(packageDir, 'package.json'), JSON.stringify({ name: 'dsh-chatgpt-sub', type: 'module', version: '0.4.0' }));
   assert.equal((await request('setUpdateAuto', { enabled: false })).data.autoUpdate, false);
   assert.equal((await request('getUpdateState')).data.autoUpdate, false);
   assert.equal((await request('rollbackUpdate', {})).data.rollback.restored, false, 'missing backup is reported');
+  assert.equal((await request('setUpdateAuto', { enabled: true })).data.autoUpdate, false, 'settings cannot re-enable upstream installs');
+  assert.equal((await request('installUpdate', { force: true })).data.disabled, true);
+  assert.equal(downloadCount, 0, 'no upstream download is allowed');
   assert.equal(readFileSync(process.env.DSH_CHATGPT_AUTH, 'utf8'), '{"fixture":"preserve"}', 'update actions preserve sign-in data');
   const client = readFileSync(new URL('../src/client-bundle.js', import.meta.url), 'utf8');
   const rpcSource = client.slice(client.indexOf('    const MUTATING_RPC ='), client.indexOf('    // React 由'));

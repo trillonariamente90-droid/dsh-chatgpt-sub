@@ -240,7 +240,7 @@ function makeJwt(claims) {
   writeBindFlag(file, { plan: 'plus' })
   const f = readBindFlag(file)
   check('readBindFlag 写后 → bound true', f.bound, true)
-  check('writeBindFlag 权限为 0600', statSync(file).mode & 0o777, 0o600)
+  if (process.platform !== 'win32') check('writeBindFlag 权限为 0600', statSync(file).mode & 0o777, 0o600)
   // readBindFlag 契约只返回 { ok, bound }；扩展字段（plan 等）写入文件保留（供外部读取），不参与读回
   const rawFlag = JSON.parse(readFileSync(file, 'utf8'))
   check('readBindFlag 扩展字段写入文件', rawFlag.plan, 'plus')
@@ -262,7 +262,7 @@ function makeJwt(claims) {
   check('writeAuthJson 保留 account_id', r2.auth.tokens.account_id, 'acc-id')
   check('writeAuthJson 保留 auth_mode', r2.auth.auth_mode, 'oauth')
   check('writeAuthJson last_refresh 更新', r2.auth.last_refresh, '2026-08-16T00:00:00.000Z')
-  check('writeAuthJson 权限为 0600', statSync(file).mode & 0o777, 0o600)
+  if (process.platform !== 'win32') check('writeAuthJson 权限为 0600', statSync(file).mode & 0o777, 0o600)
 }
 
 // ---- First sign-in without an existing Codex directory (issue #55) ----

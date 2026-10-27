@@ -52,11 +52,13 @@ try {
     const directory = join(temporary, scenario);
     mkdirSync(directory);
     process.env.DSH_CHATGPT_DATA_DIR = directory;
-    process.env.DSH_CHATGPT_AUTH = join(directory, 'codex', 'auth.json');
+    const authFile = scenario === 'success' ? join(directory, 'auth.json') : join(directory, 'codex', 'auth.json');
+    if (scenario === 'success') delete process.env.DSH_CHATGPT_AUTH;
+    else process.env.DSH_CHATGPT_AUTH = authFile;
     process.env.DSH_CHATGPT_BIND_FILE = join(directory, 'binding.json');
     process.env.DSH_CHATGPT_SELF_UPDATE = 'off';
     process.env.DSH_CHATGPT_OAUTH_TIMEOUT_MS = scenario === 'timeout' ? '350' : '5000';
-    if (scenario === 'write-failure') mkdirSync(process.env.DSH_CHATGPT_AUTH, { recursive: true });
+    if (scenario === 'write-failure') mkdirSync(authFile, { recursive: true });
     const portProbe = createServer();
     await new Promise(resolve => portProbe.listen(0, '127.0.0.1', resolve));
     process.env.DSH_CHATGPT_OAUTH_PORT = String(portProbe.address().port);
@@ -123,7 +125,7 @@ try {
       assert.equal(status.bound, scenario === 'success', scenario + ': binding persisted');
       if (scenario === 'success') {
         assert.equal(status.ok, true);
-        assert.ok(existsSync(process.env.DSH_CHATGPT_AUTH), 'first sign-in creates auth parent');
+        assert.ok(existsSync(authFile), 'first sign-in creates auth parent');
         assert.equal(credential, 'synthetic-access');
         assert.equal(selection.provider, 'openai-codex');
       } else {
@@ -132,7 +134,7 @@ try {
         assert.equal(credential, undefined);
         assert.equal(selection.provider, 'deepseek-official');
         assert.equal(sections['llm-pi-ai'].providers['openai-codex'], undefined);
-        if (scenario === 'credentials-failure') assert.equal(existsSync(process.env.DSH_CHATGPT_AUTH), false, 'failed binding rolls back newly saved auth');
+        if (scenario === 'credentials-failure') assert.equal(existsSync(authFile), false, 'failed binding rolls back newly saved auth');
       }
       assert.equal(exchangeCount, scenario === 'timeout' ? 0 : 1);
     } finally {

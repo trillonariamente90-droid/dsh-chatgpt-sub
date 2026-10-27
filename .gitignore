@@ -36,3 +36,8 @@ __pycache__/
 
 # 本地工具目录（工作树存在、未跟踪，防误 add）
 .dsh-vision-toolkit/
+
+# Local sign-in files must never be published.
+auth.json
+auth.json.*
+codex-bind.json

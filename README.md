@@ -1,3 +1,36 @@
+# Copia personal para DeepSeek Harness
+
+Repositorio: https://github.com/trillonariamente90-droid/dsh-chatgpt-sub
+
+Esta copia conserva la licencia MIT y la atribución del proyecto original.
+
+- Las actualizaciones desde el npm del autor están bloqueadas, tanto automáticas como manuales.
+- El inicio de sesión se guarda por defecto en `~/.dsh/dsh-chatgpt-sub-personal/auth.json`; no usa ni migra el archivo de Codex CLI.
+- DSH recibe el token de acceso para realizar las solicitudes. El archivo local contiene credenciales sensibles: no lo compartas.
+- El paquete es privado para evitar publicaciones accidentales en npm. El repositorio de GitHub sigue siendo público.
+
+## Instalación de esta copia
+
+En DeepSeek Harness: **Plugins → Add plugin** e introduce la dirección de **tu repositorio**:
+
+```text
+https://github.com/trillonariamente90-droid/dsh-chatgpt-sub
+```
+
+Reinicia DSH, abre **Plugins → ChatGPT Subscription**, pulsa **Sign in with ChatGPT** y completa el acceso en el sitio de OpenAI. Después selecciona un modelo del proveedor ChatGPT.
+
+No instales simultáneamente el complemento original: ambos usan el mismo identificador y canal. Si ya lo tenías, desvincúlalo y retíralo desde DSH antes de instalar esta copia.
+
+La disponibilidad depende de tu cuenta y de la compatibilidad de DSH; no se importan automáticamente las conversaciones, memoria o conexiones de ChatGPT. Estos ajustes reducen riesgos concretos, pero no constituyen una auditoría completa de DSH o de este complemento.
+
+Para actualizar, revisa los cambios en tu repositorio y vuelve a instalar esta dirección. No uses el nombre npm del autor. La variable avanzada `DSH_CHATGPT_AUTH` puede cambiar la ubicación del archivo; no la apuntes al inicio de sesión de Codex.
+
+## Documentación original
+
+Lo siguiente se conserva como referencia del proyecto original. Sus instrucciones de instalación desde npm, actualizaciones y credenciales compartidas no se aplican a esta copia; utiliza las instrucciones anteriores.
+
+---
+
 # ChatGPT Subscription
 
 **English** | [**中文**](README.zh-CN.md)
